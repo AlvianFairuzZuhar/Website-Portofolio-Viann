@@ -40,7 +40,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            cursor: auto;
+            /* Default cursor handled via media query below */
         }
 
         html { scroll-behavior: smooth; }
@@ -52,14 +52,16 @@
             overflow-x: hidden;
             line-height: 1.6;
             transition: background-color 1s ease, color 1s ease;
+            min-height: 100vh;
         }
 
         /* 
-         * 🖱️ CUSTOM CURSOR (SMOOTH MOVEMENT)
+         * 🖱️ CUSTOM CURSOR (DESKTOP ENHANCED)
          */
+        /* Hanya aktif di device yang punya mouse/hover dan bukan touch */
         @media (hover: hover) and (pointer: fine) {
-            * {
-                cursor: none !important;
+            body {
+                cursor: none; /* Sembunyikan cursor asli OS */
             }
 
             #cursor {
@@ -67,21 +69,44 @@
                 position: fixed;
                 top: 0; left: 0;
                 width: 30px; height: 30px;
-                border: 1px solid var(--accent-cyan);
+                border: 2px solid var(--accent-cyan); /* Border lebih tebal */
                 border-radius: 50%;
                 pointer-events: none;
                 z-index: 10000;
                 transform: translate3d(0,0,0); 
-                transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
-                mix-blend-mode: difference;
+                /* Transisi halus */
+                transition: width 0.3s var(--ease-cine), 
+                            height 0.3s var(--ease-cine), 
+                            background-color 0.3s ease, 
+                            border-color 0.3s ease;
+                mix-blend-mode: normal; /* Mode normal agar warna tetap jelas */
                 will-change: transform;
+                box-shadow: 0 0 10px rgba(0, 242, 255, 0.3); /* Sedikit efek cahaya */
             }
 
+            /* Titik tengah (Dot) untuk presisi */
+            #cursor::after {
+                content: '';
+                position: absolute;
+                top: 50%; left: 50%;
+                width: 6px; height: 6px;
+                background: var(--accent-cyan);
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                transition: transform 0.3s ease;
+            }
+
+            /* State saat Hover link/button */
             #cursor.hovered {
-                width: 50px; height: 50px;
-                background-color: rgba(255, 255, 255, 0.15);
-                backdrop-filter: blur(2px);
-                border-color: transparent;
+                width: 60px; height: 60px;
+                background-color: rgba(0, 242, 255, 0.1);
+                border-color: #fff; /* Border berubah putih */
+                mix-blend-mode: difference; /* Efek kontras saat hover elemen */
+            }
+
+            /* Sembunyikan titik tengah saat hover agar fokus ke lingkaran luar */
+            #cursor.hovered::after {
+                transform: translate(-50%, -50%) scale(0);
             }
         }
 
@@ -90,7 +115,6 @@
 
         /* 
          * 🎬 OPENING ANIMATION (INTRO) 
-         * Simple Logo Fade
          */
         #intro-overlay {
             position: fixed;
@@ -301,8 +325,19 @@
          */
         #home { text-align: center; }
 
+        /* 
+         * ✨ PERBAIKAN PROFIL (SYNCHRONIZED)
+         */
         .profile-container {
             position: relative; width: 200px; height: 200px; margin: 0 auto 50px;
+            /* Animasi Float sekarang ada di sini */
+            animation: float 8s ease-in-out infinite;
+            transition: transform 0.3s ease;
+        }
+
+        /* Saat di-hover, animasi berhenti (biar user bisa lihat detail) */
+        .profile-container:hover {
+            animation-play-state: paused;
         }
 
         .profile-frame {
@@ -310,7 +345,6 @@
             border: 2px solid rgba(255,255,255,0.1); background: #000;
             position: relative; z-index: 2; overflow: hidden;
             box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            animation: float 8s ease-in-out infinite;
         }
         
         .profile-frame img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
@@ -319,6 +353,13 @@
             position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px;
             border-radius: 50%; border: 1px solid var(--accent-cyan); opacity: 0.4;
             z-index: 1; animation: pulse-ring 4s infinite;
+        }
+
+        /* Efek tambahan saat hover container */
+        .profile-container:hover .profile-glow {
+            animation-play-state: paused;
+            opacity: 0.8;
+            box-shadow: 0 0 40px var(--accent-cyan);
         }
 
         @keyframes float {
@@ -612,7 +653,8 @@
                     <a href="https://wa.me/6285856106605" class="contact-item"><span class="contact-label">Phone</span><span class="contact-value">085856106605</span></a>
                     <a href="mailto:Vvian620@gmail.com" class="contact-item"><span class="contact-label">Email</span><span class="contact-value">Vvian620@gmail.com</span></a>
                     <a href="https://vianfairuzz.my.id" class="contact-item" target="_blank"><span class="contact-label">Website</span><span class="contact-value">vianfairuzz.my.id</span></a>
-                    <!-- ADDED GITHUB LINK -->
+                    <!-- ADDED INSTAGRAM LINK -->
+                    <a href="https://instagram.com/VianFairuzz" class="contact-item" target="_blank"><span class="contact-label">Instagram</span><span class="contact-value">VianFairuzz</span></a>
                     <a href="https://github.com/AlvianFairuzZuhar" class="contact-item" target="_blank"><span class="contact-label">Github</span><span class="contact-value">AlvianFairuzZuhar</span></a>
                 </div>
             </div>
@@ -843,6 +885,7 @@
             if (!isTouchDevice) {
                 state.cursor.x = lerp(state.cursor.x, state.mouse.x, 0.15);
                 state.cursor.y = lerp(state.cursor.y, state.mouse.y, 0.15);
+                // -15 adalah setengah dari lebar cursor (30px) agar kursor berada di tengah titik mouse
                 cursorEl.style.transform = `translate3d(${state.cursor.x - 15}px, ${state.cursor.y - 15}px, 0)`;
             }
 
@@ -895,5 +938,3 @@
     </script>
 </body>
 </html>
-
-
